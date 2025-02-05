@@ -548,7 +548,7 @@ class RedRatHttpControl(RemoteControl):
                   "Dataset": self.dataset, 
                   "Repeats":1}, 
             headers={"accept":"*/*",
-                    "Content-Type":"multipart/form-data"}
+                    "Content-Type":"multipart/form-data"},
             timeout=self.timeout_secs)
         if not response.ok:
             try:
