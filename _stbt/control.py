@@ -521,18 +521,18 @@ class RedRatHttpControlError(requests.HTTPError):
 
 class RedRatHttpControl(RemoteControl):
     """Send a key-press via RedRat HTTP REST API (see RedRat hub)."""
-    def __init__(self, url, timeout_secs=3, dataset):
+    def __init__(self, url, dataset, timeout_secs=3):
         self._session = requests.Session()
         self._url = url
         self.timeout_secs = timeout_secs
         self.dataset = dataset
 
     @staticmethod
-    def new_ir(hostname, port, serial_no, output, timeout_secs=3, dataset):
+    def new_ir(hostname, port, serial_no, output, dataset, timeout_secs=3):
         port = int(port or 4254)
         return RedRatHttpControl(
             "http://%s:%i/api/redrats/%s/%s" % (
-                hostname, port, serial_no, output), timeout_secs, dataset)
+                hostname, port, serial_no, output), dataset, timeout_secs )
 
     @staticmethod
     def new_bt(hostname, port, serial_no, target_bt_address, timeout_secs=3):
