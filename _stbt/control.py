@@ -542,14 +542,27 @@ class RedRatHttpControl(RemoteControl):
                 hostname, port, serial_no, target_bt_address), timeout_secs)
 
     def press(self, key):
+        #response = self._session.post(
+        #    self._url, 
+        #    data={"Signal": key, 
+        #          "Dataset": self.dataset, 
+        #          "Repeats":1}, 
+        #    headers={"accept":"*/*",
+        #            "Content-Type":"multipart/form-data"},
+        #    timeout=self.timeout_secs)
         response = self._session.post(
-            self._url, 
-            data={"Signal": key, 
-                  "Dataset": self.dataset, 
-                  "Repeats":1}, 
-            headers={"accept":"*/*",
-                    "Content-Type":"multipart/form-data"},
-            timeout=self.timeout_secs)
+            self._url,
+            files={
+                "Signal": (None, key),
+                "Dataset": (None, self.dataset),
+                "Repeats": (None, "1")
+            },
+            headers={
+                "accept":"*/*", 
+                "Content-Type":"multipart/form-data"
+            }, 
+            timeout=self.timeout_secs
+        )
         if not response.ok:
             try:
                 error_msg = response.json()["error"]
