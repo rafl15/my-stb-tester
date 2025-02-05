@@ -69,7 +69,7 @@ def _lookup_uri_to_control(uri, display=None):
          r'(?P<serial_no>[^:/]+):(?P<target_bt_address>[^:/]+)',
          RedRatHttpControl.new_bt),
         (r'redrat-ir:(?P<hostname>[^:/]+):((?P<port>\d+))?:'
-         r'(?P<serial_no>[^:/]+):(?P<output>[^:/]+)', RedRatHttpControl.new_ir),
+         r'(?P<serial_no>[^:/]+):(?P<output>[^:/]+):(?P<dataset>[^:/]+)', RedRatHttpControl.new_ir),
     ]
     if gpl_controls is not None:
         controls += gpl_controls
@@ -521,17 +521,18 @@ class RedRatHttpControlError(requests.HTTPError):
 
 class RedRatHttpControl(RemoteControl):
     """Send a key-press via RedRat HTTP REST API (see RedRat hub)."""
-    def __init__(self, url, timeout_secs=3):
+    def __init__(self, url, timeout_secs=3, dataset):
         self._session = requests.Session()
         self._url = url
         self.timeout_secs = timeout_secs
+        self.dataset = dataset
 
     @staticmethod
-    def new_ir(hostname, port, serial_no, output, timeout_secs=3):
+    def new_ir(hostname, port, serial_no, output, timeout_secs=3, dataset):
         port = int(port or 4254)
         return RedRatHttpControl(
             "http://%s:%i/api/redrats/%s/%s" % (
-                hostname, port, serial_no, output), timeout_secs)
+                hostname, port, serial_no, output), timeout_secs, dataset)
 
     @staticmethod
     def new_bt(hostname, port, serial_no, target_bt_address, timeout_secs=3):
@@ -542,7 +543,13 @@ class RedRatHttpControl(RemoteControl):
 
     def press(self, key):
         response = self._session.post(
-            self._url, {"Command": key}, timeout=self.timeout_secs)
+            self._url, 
+            data={"Signal": key, 
+                  "Dataset": self.dataset, 
+                  "Repeats":1}, 
+            headers={"accept":"*/*",
+                    "Content-Type":"multipart/form-data"}
+            timeout=self.timeout_secs)
         if not response.ok:
             try:
                 error_msg = response.json()["error"]
